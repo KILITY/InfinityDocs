@@ -6,12 +6,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <PlatformTarger>x64</PlatformTarger>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Features\InfiniteCanvas\" />
     <Folder Include="Features\ProjectSelector\" />
-    <Folder Include="Features\Parser\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TreeSitterLanguagePack" Version="1.10.9" />
   </ItemGroup>
 
 </Project>

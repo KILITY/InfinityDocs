@@ -8,6 +8,6 @@
         Title="InfinityDocs" Height="450" Width="800">
     <Grid>
 
-        <TextBlock>"Hello World!"</TextBlock>
+        <TextBox x:Name="SyntaxTreeTextBox" TextWrapping="Wrap" AcceptsReturn="True"></TextBox>
     </Grid>
 </Window>
