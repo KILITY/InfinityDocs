@@ -87,7 +87,7 @@ public class DocParser : IDocParser
 
         if (config.ClassInvocationNodeKinds.Contains(kind))
         {
-            HandleClassInvocation(node, file, fileBytes);
+            HandleClassInvocation(node, file, fileBytes, extractor);
         }
 
         for (uint i = 0; i < node.ChildCount(); i++)
@@ -96,23 +96,23 @@ public class DocParser : IDocParser
         }
     }
 
-    private void HandleClassInvocation(Node node, DocFile file, Byte[] fileBytes)
+    private void HandleClassInvocation(Node node, DocFile file, Byte[] fileBytes, INodeExtractor extractor)
     {
-        var className = node.ChildByFieldName("type")?.ToString();
-        file.ClassInvocations.Add(new ClassInvocation(className, file.FilePath, file.FileName));
+        var typeNode = extractor.GetClassInvocationType(node);
+        file.ClassInvocations.Add(new ClassInvocation(GetNodeText(typeNode, fileBytes), file.FilePath, file.FileName));
     }
 
-    private void HandleClassDeclaration(Node node, DocFile file)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void HandleMethodInvocation(Node node, DocFile file)
+    private void HandleClassDeclaration(Node node, DocFile file, INodeExtractor extractor)
     {
         throw new NotImplementedException();
     }
 
-    private void HandleMethodDeclaration(Node node, DocFile file)
+    private void HandleMethodInvocation(Node node, DocFile file, INodeExtractor extractor)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void HandleMethodDeclaration(Node node, DocFile file, INodeExtractor extractor)
     {
         throw new NotImplementedException();
     }

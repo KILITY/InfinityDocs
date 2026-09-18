@@ -26,10 +26,10 @@ namespace InfinityDocs.Features.Helpers.Implementations
             switch (language)
             {
                 case Languages.csharp:
-                    languageConfiguration.MethodDeclarationNodeTypes.Add("method_declaration");
-                    languageConfiguration.MethodInvocationNodeTypes.Add("invocation_expression");
-                    languageConfiguration.ClassDeclarationNodeTypes.Add("class_declaration");
-                    languageConfiguration.ClassInvocationNodeTypes.Add("object_creation_expression");
+                    languageConfiguration.MethodDeclarationNodeKinds.Add("method_declaration");
+                    languageConfiguration.MethodInvocationNodeKinds.Add("invocation_expression");
+                    languageConfiguration.ClassDeclarationNodeKinds.Add("class_declaration");
+                    languageConfiguration.ClassInvocationNodeKinds.Add("object_creation_expression");
                     break;
                 default:
                     throw new NotImplementedException(nameof(language));
