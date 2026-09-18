@@ -6,7 +6,6 @@
         public string FilePath { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
         public string AccessModifier { get; set; } = string.Empty;
-        public Property[] Properties { get; set; } = [];
 
         public Class(string Name, string FilePath, string FileName, string AccessModifier)
         {
