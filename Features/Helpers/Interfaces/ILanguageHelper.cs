@@ -7,8 +7,8 @@ namespace InfinityDocs.Features.Helpers.Interfaces
 {
     public interface ILanguageHelper
     {
-        public string GetLanguageName(Languages language);
+        string GetLanguageName(Languages language);
 
-        public LanguageConfiguration GetLanguageConfiguration(Languages language);
+        LanguageConfiguration GetLanguageConfiguration(Languages language);
     }
 }

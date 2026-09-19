@@ -10,11 +10,11 @@ namespace InfinityDocs.Features.Models.FileStructure
         public string FilePath { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
 
-        public ClassInvocation(string ClassName, string FilePath, string FileName)
+        public ClassInvocation(string className, string filePath, string fileName)
         {
-            this.ClassName = ClassName;
-            this.FilePath = FilePath;
-            this.FileName = FileName;
+            this.ClassName = className;
+            this.FilePath = filePath;
+            this.FileName = fileName;
         }
     }
 }

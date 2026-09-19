@@ -5,14 +5,14 @@
         public string Name { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
-        public string AccessModifier { get; set; } = string.Empty;
+        public string? AccessModifier { get; set; } = null;
 
-        public Class(string Name, string FilePath, string FileName, string AccessModifier)
+        public Class(string name, string filePath, string fileName, string? accessModifier = null)
         {
-            this.Name = Name;
-            this.FilePath = FilePath;
-            this.FileName = FileName;
-            this.AccessModifier = AccessModifier;
+            this.Name = name;
+            this.FilePath = filePath;
+            this.FileName = fileName;
+            this.AccessModifier = accessModifier;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using InfinityDocs.Features.Extractors.Implementations;
 using InfinityDocs.Features.Helpers.Implementations;
 using InfinityDocs.Features.Models;
 using InfinityDocs.Features.Parser;
@@ -50,7 +51,9 @@ namespace InfinityDocs
         {
             var languageHelper = new LanguageHelper();
             var fileExtensionHelper = new FileExtensionHelper();
-            var docParser = new DocParser(fileExtensionHelper, languageHelper);
+            var nodeHelper = new NodeHelper();
+            var extractor = ExtractorFactory.CreateExtractor(Languages.csharp);
+            var docParser = new DocParser(Languages.csharp, fileExtensionHelper, languageHelper, nodeHelper, extractor);
             var result = docParser.Parse("C:\\Users\\Andrei\\Downloads\\ParserTestProject", Languages.csharp);
             var result2 = 1;
         }

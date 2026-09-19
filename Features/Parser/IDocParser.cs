@@ -5,5 +5,5 @@ namespace InfinityDocs.Features.Parser;
 
 public interface IDocParser
 {
-    public List<DocFile> Parse(string folderPath, Languages language);
+    List<DocFile> Parse(string folderPath, Languages language);
 }

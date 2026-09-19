@@ -4,6 +4,6 @@ namespace InfinityDocs.Features.Helpers.Interfaces
 {
     public interface IFileExtensionHelper
     {
-        public string GetFileExtension(Languages language);
+         string GetFileExtension(Languages language);
     }
 }
