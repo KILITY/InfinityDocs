@@ -2,7 +2,6 @@
 using System.Text;
 using InfinityDocs.Features.Extractors.Implementations;
 using InfinityDocs.Features.Extractors.Interface;
-using InfinityDocs.Features.Helpers.Implementations;
 using InfinityDocs.Features.Helpers.Interfaces;
 using InfinityDocs.Features.Models;
 using InfinityDocs.Features.Models.FileStructure;
@@ -27,22 +26,53 @@ public class DocParser : IDocParser
         _extractor = extractor;
     }
 
-    public List<DocFile> Parse(string folderPath, Languages language)
+    public List<DocFile> Parse(string folderPath)
     {
 
-        var filePaths = GetFilePaths(folderPath, language);
+        var filePaths = GetFilePaths(folderPath);
         var fileParseResults = ParseFiles(filePaths);
 
-        //Create Dictionaries for Method Invocations and Class Invocations: To see each method and class invocation and the files they are invoked in. This will be used for cross referencing.
-        //var MethodInvocationDictionary = CreateMethodInvocationDictionary();
-        //var ClassInvocationDictionary = CreateClassInvocationDictionary();
+        //var linkedFiles = LinkFiles(fileParseResults);
 
         return fileParseResults;
     }
 
-    private List<string> GetFilePaths(string folderPath, Languages language)
+
+
+    #region Helper Methods
+
+    private List<Parameter> CreateParameterObjects(List<Node>? parameterNodes, byte[] fileBytes)
     {
-        var fileExtension = _fileExtensionHelper.GetFileExtension(language);
+        var parameters = new List<Parameter>();
+        if (parameterNodes is not null)
+        {
+            foreach (var parameterNode in parameterNodes)
+            {
+                var nameNode = _extractor.GetParameterName(parameterNode);
+                var typeNode = _extractor.GetParameterType(parameterNode);
+
+                if (nameNode is null || typeNode is null)
+                {
+                    continue;
+                }
+
+                var type = _nodeHelper.GetNodeText(typeNode, fileBytes);
+                var name = _nodeHelper.GetNodeText(nameNode, fileBytes);
+
+                var parameter = new Parameter(type, name);
+                parameters.Add(parameter);
+            }
+        }
+
+        return parameters;
+    }
+
+    #endregion
+
+    #region File Parsing Methods
+    private List<string> GetFilePaths(string folderPath)
+    {
+        var fileExtension = _fileExtensionHelper.GetFileExtension(_language);
 
         var filePaths = Directory.GetFiles(folderPath, $"*{fileExtension}", SearchOption.AllDirectories).ToList();
         return filePaths;
@@ -53,8 +83,6 @@ public class DocParser : IDocParser
         var results = new List<DocFile>();
         var languageString = _languageHelper.GetLanguageName(_language);
         var parser = TreeSitterLanguagePackConverter.GetParser(languageString);
-        var MethodInvocationDictionary = new Dictionary<Method, List<MethodInvocation>>();
-        var ClassInvocationsDictioanry = new Dictionary<Class, List<ClassInvocation>>();
 
         foreach (var filePath in filePaths)
         {
@@ -80,17 +108,17 @@ public class DocParser : IDocParser
     {
         var config = _languageHelper.GetLanguageConfiguration(_language);
         var kind = node.Kind();
-        if (config.MethodDeclarationNodeKinds.Contains(node.Kind()))
+        if (config.MethodDeclarationNodeKinds.Contains(kind))
         {
             HandleMethodDeclaration(node, file, fileBytes);
         }
 
-        if (config.MethodInvocationNodeKinds.Contains(node.Kind()))
+        if (config.MethodInvocationNodeKinds.Contains(kind))
         {
             HandleMethodInvocation(node, file, fileBytes);
         }
 
-        if (config.ClassDeclarationNodeKinds.Contains(node.Kind()))
+        if (config.ClassDeclarationNodeKinds.Contains(kind))
         {
             HandleClassDeclaration(node, file, fileBytes);
         }
@@ -161,30 +189,63 @@ public class DocParser : IDocParser
         file.Methods.Add(methodObject);
     }
 
-    private List<Parameter> CreateParameterObjects(List<Node>? parameterNodes, byte[] fileBytes)
+    #endregion
+
+    #region File Linking Methods
+
+    //private List<DocFile> LinkFiles(List<DocFile> fileParseResults)
+    //{
+    //    var methodDictionary = CreateMethodInvocationDictionary(fileParseResults);
+    //    var classDictionary = CreateClassInvocationDictionary(fileParseResults);
+
+    //    //Now we know for each method and class what invocations are in the project, we can link them to the methods and classes
+    //    //What we actually want is not to link the invocations to the methods and classes, but to build a graph out of files. For example
+    //    //There is a link between two files, if a method or class declared in file A is invoked in file B. This project is meant to showcase the relationship between files, not between methods and classes.
+    //    //This will provide a better understanding of the project structure and how files are related to each other, of coupling, and can give a better understanding of how Ai changes impact projects.
+    //    //
+
+    //}
+
+    private Dictionary<Method, MethodInvocation> CreateClassInvocationDictionary(List<DocFile> docFiles)
     {
-        var parameters = new List<Parameter>();
-        if (parameterNodes is not null)
+        var dictionary = new Dictionary<Method, MethodInvocation>();
+
+        var methods = docFiles.SelectMany(df => df.Methods);
+        var methodInvocations = docFiles.SelectMany(df => df.MethodInvocations);
+
+        foreach (var method in methods)
         {
-            foreach (var parameterNode in parameterNodes)
+            foreach(var methodInvocation in methodInvocations)
             {
-                var nameNode = _extractor.GetParameterName(parameterNode);
-                var typeNode = _extractor.GetParameterType(parameterNode);
-
-                if (nameNode is null || typeNode is null)
+                if (methodInvocation.Method == method.Name)
                 {
-                    continue;
+                    dictionary.Add(method, methodInvocation);
                 }
-
-                var type = _nodeHelper.GetNodeText(typeNode, fileBytes);
-                var name = _nodeHelper.GetNodeText(nameNode, fileBytes);
-
-                var parameter = new Parameter(type, name);
-                parameters.Add(parameter);
             }
         }
 
-        return parameters;
+        return dictionary;
     }
 
+    private Dictionary<Class, ClassInvocation> CreateMethodInvocationDictionary(List<DocFile> docFiles)
+    {
+        var dictionary = new Dictionary<Class, ClassInvocation>();
+
+        var classes = docFiles.SelectMany(df => df.Classes);
+        var classInvocations = docFiles.SelectMany(df => df.ClassInvocations);
+
+        foreach (var @class in classes)
+        {
+            foreach (var classInvocation in classInvocations)
+            {
+                if (classInvocation.ClassName == @class.Name)
+                {
+                    dictionary.Add(@class, classInvocation);
+                }
+            }
+        }
+
+        return dictionary;
+    }
+    #endregion
 }

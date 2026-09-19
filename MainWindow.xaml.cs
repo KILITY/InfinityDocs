@@ -54,7 +54,7 @@ namespace InfinityDocs
             var nodeHelper = new NodeHelper();
             var extractor = ExtractorFactory.CreateExtractor(Languages.csharp);
             var docParser = new DocParser(Languages.csharp, fileExtensionHelper, languageHelper, nodeHelper, extractor);
-            var result = docParser.Parse("C:\\Users\\Andrei\\Downloads\\ParserTestProject", Languages.csharp);
+            var result = docParser.Parse("C:\\Users\\Andrei\\Downloads\\ParserTestProject");
             var result2 = 1;
         }
     }
