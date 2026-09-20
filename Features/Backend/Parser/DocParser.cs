@@ -32,7 +32,7 @@ public class DocParser : IDocParser
         var filePaths = GetFilePaths(folderPath);
         var fileParseResults = ParseFiles(filePaths);
 
-        //var linkedFiles = LinkFiles(fileParseResults);
+        LinkFiles(fileParseResults);
 
         return fileParseResults;
     }
@@ -193,58 +193,59 @@ public class DocParser : IDocParser
 
     #region File Linking Methods
 
-    //private List<DocFile> LinkFiles(List<DocFile> fileParseResults)
-    //{
-    //    var methodDictionary = CreateMethodInvocationDictionary(fileParseResults);
-    //    var classDictionary = CreateClassInvocationDictionary(fileParseResults);
-
-    //    //Now we know for each method and class what invocations are in the project, we can link them to the methods and classes
-    //    //What we actually want is not to link the invocations to the methods and classes, but to build a graph out of files. For example
-    //    //There is a link between two files, if a method or class declared in file A is invoked in file B. This project is meant to showcase the relationship between files, not between methods and classes.
-    //    //This will provide a better understanding of the project structure and how files are related to each other, of coupling, and can give a better understanding of how Ai changes impact projects.
-    //    //
-
-    //}
-
-    private Dictionary<Method, MethodInvocation> CreateClassInvocationDictionary(List<DocFile> docFiles)
+    private void LinkFiles(List<DocFile> fileParseResults)
     {
-        var dictionary = new Dictionary<Method, MethodInvocation>();
+        var methodDictionary = CreateMethodInvocationDictionary(fileParseResults); //for each method all it's invocations
+        var classDictionary = CreateClassInvocationDictionary(fileParseResults); //for each class all it's invocations
 
-        var methods = docFiles.SelectMany(df => df.Methods);
-        var methodInvocations = docFiles.SelectMany(df => df.MethodInvocations);
+        //file.LinkedFileNames --> means the files that invoke this file in some sort of way
 
-        foreach (var method in methods)
+        foreach (var file in fileParseResults)
         {
-            foreach(var methodInvocation in methodInvocations)
+
+            foreach (var method in file.Methods)
             {
-                if (methodInvocation.Method == method.Name)
+                if(methodDictionary.TryGetValue(method, out var methodInvocations))
                 {
-                    dictionary.Add(method, methodInvocation);
+                    file.DependentFiles.UnionWith(methodInvocations.Select(mi => mi.FileName));
+                }
+            }
+
+            foreach (var @class in file.Classes)
+            {
+                if (classDictionary.TryGetValue(@class, out var classInvocations))
+                {
+                    file.DependentFiles.UnionWith(classInvocations.Select(ci => ci.FileName));
                 }
             }
         }
+    }
 
+    private Dictionary<Method, List<MethodInvocation>> CreateMethodInvocationDictionary(List<DocFile> docFiles)
+    {
+        var allMethods = docFiles.SelectMany(f => f.Methods).ToList();
+        var allMethodInvocations = docFiles.SelectMany(f => f.MethodInvocations).ToList();
+
+        var dictionary = new Dictionary<Method, List<MethodInvocation>>();
+
+        foreach (var method in allMethods)
+        {
+            dictionary[method] = allMethodInvocations.Where(mi => mi.Method == method.Name).ToList();
+        }
         return dictionary;
     }
 
-    private Dictionary<Class, ClassInvocation> CreateMethodInvocationDictionary(List<DocFile> docFiles)
+    private Dictionary<Class, List<ClassInvocation>> CreateClassInvocationDictionary(List<DocFile> docFiles)
     {
-        var dictionary = new Dictionary<Class, ClassInvocation>();
+        var allClasses = docFiles.SelectMany(f => f.Classes).ToList();
+        var allClassInvocations = docFiles.SelectMany(f => f.ClassInvocations).ToList();
 
-        var classes = docFiles.SelectMany(df => df.Classes);
-        var classInvocations = docFiles.SelectMany(df => df.ClassInvocations);
+        var dictionary = new Dictionary<Class, List<ClassInvocation>>();
 
-        foreach (var @class in classes)
+        foreach (var @class in allClasses)
         {
-            foreach (var classInvocation in classInvocations)
-            {
-                if (classInvocation.ClassName == @class.Name)
-                {
-                    dictionary.Add(@class, classInvocation);
-                }
-            }
+            dictionary[@class] = allClassInvocations.Where(ci => ci.ClassName == @class.Name).ToList();
         }
-
         return dictionary;
     }
     #endregion

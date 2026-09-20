@@ -10,7 +10,7 @@
         public List<Class> Classes { get; set; } = [];
         public List<ClassInvocation> ClassInvocations { get; set; } = [];
 
-        public List<string> LinkedFileNames { get; set; } = [];
+        public HashSet<string> DependentFiles { get; set; } = [];
 
         public DocFile(string filePath, string fileName, string fileExtension)
         {
